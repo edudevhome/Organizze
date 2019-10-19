@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.devhome.eduardobastos.organizze.R;
 import com.devhome.eduardobastos.organizze.activitys.config.ConfiguracaoFirebase;
+import com.devhome.eduardobastos.organizze.activitys.helper.Base64Custom;
 import com.devhome.eduardobastos.organizze.activitys.model.Usuario;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -86,6 +87,10 @@ public class CadastroActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
 
                 if (task.isSuccessful()){
+
+                    String idUsuario = Base64Custom.codificarBase64(usuario.getEmail());
+                    usuario.setIdUsuario(idUsuario);
+                    usuario.salvar();
 
                     finish();
 
