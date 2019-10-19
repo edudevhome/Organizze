@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Organizze</string>
+    <string name="title_activity_tela_inicial">TelaInicialActivity</string>
+    <string name="title_activity_tela_principal">TelaPrincipalActivity</string>
+</resources>
