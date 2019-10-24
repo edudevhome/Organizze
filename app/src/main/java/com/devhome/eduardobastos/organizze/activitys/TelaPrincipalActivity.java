@@ -1,5 +1,6 @@
 package com.devhome.eduardobastos.organizze.activitys;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -12,8 +13,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.devhome.eduardobastos.organizze.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -50,6 +54,7 @@ public class TelaPrincipalActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private AdapterMovimentacao adapterMovimentacao;
     private List<Movimentacao> movimentacoes = new ArrayList<>();
+    private Movimentacao movimentacao;
     private DatabaseReference movimentacaoRef;
     private String mesAnoSelecionado;
 
@@ -69,6 +74,7 @@ public class TelaPrincipalActivity extends AppCompatActivity {
         materialCalendarView = findViewById(R.id.calendarView);
         recyclerView = findViewById(R.id.recyclerView);
         configuraCalendarView();
+        swipe();
 
         //configura adapter
         adapterMovimentacao = new AdapterMovimentacao(movimentacoes, this);
@@ -80,13 +86,97 @@ public class TelaPrincipalActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapterMovimentacao);
     }
 
+    public void swipe(){
+
+        final ItemTouchHelper.Callback itemTouch = new ItemTouchHelper.Callback() {
+            @Override
+            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+
+                int dragFlags = ItemTouchHelper.ACTION_STATE_IDLE;
+                int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+                return makeMovementFlags(dragFlags, swipeFlags);
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+
+
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+                excuirMovimentacao(viewHolder);
+                //Log.i("swipe", "item foi arrastado");
+            }
+        };
+        new ItemTouchHelper(itemTouch).attachToRecyclerView(recyclerView);
+    }
+
+    public void excuirMovimentacao(final RecyclerView.ViewHolder viewHolder){
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        //configura AlertaDialog
+        alertDialog.setTitle("Excluir movimentação da conta");
+        alertDialog.setMessage("Tem certeza que deseja excluir esse item?");
+        alertDialog.setCancelable(false);
+
+        alertDialog.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+                int position = viewHolder.getAdapterPosition();
+                movimentacao = movimentacoes.get(position);
+
+
+                String emailUsuario = auth.getCurrentUser().getEmail();
+                String idUsuario = Base64Custom.codificarBase64(emailUsuario);
+                movimentacaoRef = databaseReference.child("movimentacao")
+                        .child(idUsuario)
+                        .child(mesAnoSelecionado);
+                movimentacaoRef.child(movimentacao.getKey()).removeValue();
+                adapterMovimentacao.notifyItemRemoved(position);
+                atualizarSaldo();
+            }
+        });
+
+        alertDialog.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Toast.makeText(TelaPrincipalActivity.this, "Cancelado", Toast.LENGTH_SHORT).show();
+                adapterMovimentacao.notifyDataSetChanged();
+            }
+        });
+        AlertDialog alert = alertDialog.create();
+        alert.show();
+    }
+
+    public void atualizarSaldo(){
+
+        String emailUsuario = auth.getCurrentUser().getEmail();
+        String idUsuario = Base64Custom.codificarBase64(emailUsuario);
+        usuarioRef = databaseReference.child("usuarios").child(idUsuario);
+
+        if (movimentacao.getTipo().equals("R")){
+
+            receitaTotal = receitaTotal - movimentacao.getValor();
+            usuarioRef.child("receitaTotal").setValue(receitaTotal);
+        }
+        if (movimentacao.getTipo().equals("D")){
+
+            receitaTotal = receitaTotal + movimentacao.getValor();
+            usuarioRef.child("despesaTotal").setValue(despesaTotal);
+        }
+    }
+
     public void recuperarMovimentacao(){
         String emailUsuario = auth.getCurrentUser().getEmail();
         String idUsuario = Base64Custom.codificarBase64(emailUsuario);
-
         movimentacaoRef = databaseReference.child("movimentacao")
                                             .child(idUsuario)
                                             .child(mesAnoSelecionado);
+
         //Log.i("dadosRetorno", "dados" + mesAnoSelecionado);
         valueEventListenerMovimentacao = movimentacaoRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -98,6 +188,7 @@ public class TelaPrincipalActivity extends AppCompatActivity {
                     //Log.i("dados", "retorno" + dados.toString());
                     Movimentacao movimentacao = dados.getValue(Movimentacao.class);
                     //Log.i("dadosRetorno", "dados" + movimentacao.getCategoria());
+                    movimentacao.setKey(dados.getKey());
                     movimentacoes.add(movimentacao);
                 }
 
