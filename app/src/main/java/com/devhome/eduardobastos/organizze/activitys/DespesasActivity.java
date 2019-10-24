@@ -1,6 +1,7 @@
 package com.devhome.eduardobastos.organizze.activitys;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.view.View;
@@ -27,6 +28,7 @@ public class DespesasActivity extends AppCompatActivity {
     private DatabaseReference databaseReference = ConfiguracaoFirebase.getDatabaseReference();
     private FirebaseAuth auth = ConfiguracaoFirebase.getFirebaseAutenticacao();
     private Double despesaTotal;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +39,7 @@ public class DespesasActivity extends AppCompatActivity {
         editTextValor = findViewById(R.id.editTextValor);
         editTextCategoria = findViewById(R.id.editTextCategoria);
         editTextDscr = findViewById(R.id.editTextDescricao);
+
 
         //preenche o campo com a data atual
         editTextData.setText(DateCustom.dataAtual());
@@ -61,6 +64,7 @@ public class DespesasActivity extends AppCompatActivity {
             atualizarDespesas(despesaAtualizada);
 
             movimentacao.salvar(data);
+            finish();
         }
     }
 

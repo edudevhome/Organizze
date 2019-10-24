@@ -12,14 +12,16 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/AppTheme.AppBarOverlay"
+        app:elevation= "0dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -44,13 +46,13 @@
 
         <com.github.clans.fab.FloatingActionButton
             android:id="@+id/menu_despesas"
-            android:onClick="AddDespesa"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="AddDespesa"
             android:src="@drawable/ic_add_branco_24dp"
             app:fab_colorNormal="@color/colorPrimaryDespesas"
             app:fab_label="Despesas"
-            app:fab_size="mini"/>
+            app:fab_size="mini" />
 
 
 
